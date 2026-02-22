@@ -3,39 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Temp Mail - Powered by Mail.tm</title>
+    <title>Custom Temp Mail - Mail.tm</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; }
     </style>
 </head>
 <body class="p-4 md:p-10">
 
     <div class="max-w-3xl mx-auto">
         <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="bg-indigo-600 p-8 text-white text-center">
-                <h1 class="text-3xl font-bold tracking-tight">পাওয়ারফুল টেম্প মেইল</h1>
-                <p class="text-indigo-100 mt-2 opacity-90">Mail.tm API - জিমেইল সাপোর্ট করে</p>
+            <div class="bg-gradient-to-r from-indigo-600 to-violet-600 p-8 text-white text-center">
+                <h1 class="text-3xl font-bold tracking-tight">অ্যাডভান্সড টেম্প মেইল</h1>
+                <p class="text-indigo-100 mt-2 opacity-90">কাস্টম ইউজার ও ডোমেইন সুবিধা সহ</p>
             </div>
 
             <div class="p-6 md:p-10">
-                <div class="mb-8">
-                    <label class="block text-sm font-bold text-slate-500 mb-3 uppercase tracking-wider">আপনার নতুন ইমেইল:</label>
-                    <div class="flex gap-2">
-                        <input id="email-addr" readonly type="text" 
-                            class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl font-mono text-indigo-700 text-lg focus:outline-none" 
-                            value="তৈরি হচ্ছে...">
-                        <button onclick="copyEmail()" class="bg-indigo-600 text-white px-8 rounded-2xl font-bold hover:bg-indigo-700 transition-all active:scale-95">
-                            কপি
-                        </button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-500 mb-2 uppercase">ইউজারনেম (Custom):</label>
+                        <input id="custom-user" type="text" placeholder="ইচ্ছেমতো নাম লিখুন" 
+                            class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-indigo-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-500 mb-2 uppercase">ডোমেইন বেছে নিন:</label>
+                        <select id="domain-select" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:border-indigo-500 outline-none transition cursor-pointer">
+                            <option value="">লোডিং ডোমেইন...</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="flex gap-4 mb-10">
-                    <button onclick="initMail()" class="flex-1 bg-slate-800 text-white font-bold py-4 rounded-2xl hover:bg-slate-900 transition shadow-lg">
-                        🔄 নতুন আইডি নিন
-                    </button>
+                <button onclick="createCustomMail()" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition shadow-lg mb-8 active:scale-[0.98]">
+                    🚀 কাস্টম মেইল সেটআপ করুন
+                </button>
+
+                <div class="bg-slate-50 p-6 rounded-2xl border border-dashed border-slate-300 mb-8">
+                    <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">বর্তমান ইমেইল অ্যাড্রেস:</label>
+                    <div class="flex items-center justify-between gap-4">
+                        <span id="current-email" class="text-xl font-mono font-bold text-indigo-700 truncate">লোড হচ্ছে...</span>
+                        <button onclick="copyEmail()" class="bg-white border border-indigo-200 text-indigo-600 px-4 py-2 rounded-xl font-bold hover:bg-indigo-50 transition active:scale-90">কপি</button>
+                    </div>
                 </div>
 
                 <div class="border-t border-slate-100 pt-8">
@@ -45,10 +53,7 @@
                     </div>
                     
                     <div id="emails-list" class="space-y-4">
-                        <div class="text-center py-16 text-slate-400">
-                            <p class="text-lg">এখনো কোনো মেইল আসেনি।</p>
-                            <p class="text-sm">অটো-রিফ্রেশ চালু আছে...</p>
-                        </div>
+                        <div class="text-center py-10 text-slate-400 italic">মেইল সেটআপ করে অপেক্ষা করুন...</div>
                     </div>
                 </div>
             </div>
@@ -57,60 +62,86 @@
 
     <div id="mail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+            <div class="p-6 border-b flex justify-between items-center">
                 <h3 id="modal-subject" class="font-bold text-xl text-slate-800 truncate pr-10">মেসেজ</h3>
-                <button onclick="closeMail()" class="text-slate-400 hover:text-slate-600 text-4xl">&times;</button>
+                <button onclick="closeMail()" class="text-slate-400 hover:text-slate-600 text-4xl leading-none">&times;</button>
             </div>
-            <div id="mail-content" class="p-8 overflow-y-auto flex-1"></div>
+            <div id="mail-content" class="p-8 overflow-y-auto flex-1 bg-white prose prose-indigo max-w-none"></div>
         </div>
     </div>
 
     <script>
         const API = "https://api.mail.tm";
         let token = "";
-        let accountId = "";
         let address = "";
+        const password = "securepassword123"; // স্ট্যাটিক পাসওয়ার্ড অটোমেশনের জন্য
 
-        // ১. নতুন মেইল অ্যাকাউন্ট তৈরি
-        async function initMail() {
-            document.getElementById('email-addr').value = "তৈরি হচ্ছে...";
+        // ১. ডোমেইন লিস্ট লোড করা
+        async function fetchDomains() {
             try {
-                // ডোমেইন লিস্ট নেওয়া
-                const domRes = await fetch(`${API}/domains`);
-                const domData = await domRes.json();
-                const domain = domData['hydra:member'][0].domain;
+                const res = await fetch(`${API}/domains`);
+                const data = await res.json();
+                const select = document.getElementById('domain-select');
+                select.innerHTML = '';
+                data['hydra:member'].forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.domain;
+                    opt.innerText = d.domain;
+                    select.appendChild(opt);
+                });
+                // ডিফল্ট মেইল তৈরি
+                initRandomMail();
+            } catch (e) { console.error("Domain load error", e); }
+        }
 
-                // র্যান্ডম ইউজার তৈরি
-                const user = Math.random().toString(36).substring(2, 12);
-                const password = "password123";
-                address = `${user}@${domain}`;
+        // ২. র্যান্ডম মেইল তৈরি (শুরুতে)
+        function initRandomMail() {
+            const randomUser = Math.random().toString(36).substring(2, 10);
+            document.getElementById('custom-user').value = randomUser;
+            createCustomMail();
+        }
 
-                // অ্যাকাউন্ট রেজিস্ট্রেশন
-                const accRes = await fetch(`${API}/accounts`, {
+        // ৩. কাস্টম ইউজার ও ডোমেইন দিয়ে অ্যাকাউন্ট তৈরি
+        async function createCustomMail() {
+            const user = document.getElementById('custom-user').value.trim();
+            const domain = document.getElementById('domain-select').value;
+            
+            if(!user || !domain) return alert("ইউজারনেম এবং ডোমেইন চেক করুন!");
+
+            address = `${user}@${domain}`.toLowerCase();
+            document.getElementById('current-email').innerText = "অ্যাকাউন্ট তৈরি হচ্ছে...";
+            
+            try {
+                // অ্যাকাউন্ট ক্রিয়েশন (যদি আগে না থাকে)
+                await fetch(`${API}/accounts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ address, password })
                 });
-                const accData = await accRes.json();
-                accountId = accData.id;
 
-                // টোকেন নেওয়া
+                // টোকেন বা লগইন
                 const tokenRes = await fetch(`${API}/token`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ address, password })
                 });
                 const tokenData = await tokenRes.json();
-                token = tokenData.token;
-
-                document.getElementById('email-addr').value = address;
-                checkMessages();
+                
+                if(tokenData.token) {
+                    token = tokenData.token;
+                    document.getElementById('current-email').innerText = address;
+                    document.getElementById('emails-list').innerHTML = '<div class="text-center py-10 text-slate-400 italic">নতুন ইনবক্স তৈরি হয়েছে। মেইল পাঠিয়ে অপেক্ষা করুন...</div>';
+                    checkMessages();
+                } else {
+                    alert("এই ইউজারনেমটি অন্য কেউ নিয়ে নিয়েছে। অন্য নাম ট্রাই করুন।");
+                }
             } catch (e) {
-                alert("এপিআই কানেকশনে সমস্যা হচ্ছে। দয়া করে একটু পর চেষ্টা করুন।");
+                console.error(e);
+                alert("ত্রুটি হয়েছে! সম্ভবত এই নামে আগে থেকেই আইডি আছে।");
             }
         }
 
-        // ২. মেইল চেক করা
+        // ৪. ইনবক্স চেক
         async function checkMessages() {
             if (!token) return;
             document.getElementById('loader').classList.remove('hidden');
@@ -127,11 +158,14 @@
                     list.innerHTML = '';
                     messages.forEach(msg => {
                         const div = document.createElement('div');
-                        div.className = "p-5 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-indigo-400 hover:shadow-lg transition-all";
+                        div.className = "p-5 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-indigo-400 hover:shadow-lg transition-all active:scale-[0.99]";
                         div.onclick = () => readMail(msg.id);
                         div.innerHTML = `
-                            <p class="text-xs font-bold text-indigo-600 mb-1">প্রেরক: ${msg.from.address}</p>
-                            <h4 class="font-bold text-slate-800">${msg.subject}</h4>
+                            <div class="flex justify-between items-start">
+                                <p class="text-xs font-bold text-indigo-600 uppercase">থেকে: ${msg.from.address}</p>
+                                <span class="text-[10px] text-slate-400">${new Date(msg.createdAt).toLocaleTimeString()}</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 mt-1">${msg.subject || '(নো সাবজেক্ট)'}</h4>
                         `;
                         list.prepend(div);
                     });
@@ -140,7 +174,7 @@
             document.getElementById('loader').classList.add('hidden');
         }
 
-        // ৩. নির্দিষ্ট মেইল পড়া
+        // ৫. মেইল কন্টেন্ট পড়া
         async function readMail(id) {
             const res = await fetch(`${API}/messages/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -148,22 +182,21 @@
             const data = await res.json();
             
             document.getElementById('modal-subject').innerText = data.subject;
-            document.getElementById('mail-content').innerHTML = data.html || `<pre>${data.text}</pre>`;
+            document.getElementById('mail-content').innerHTML = data.html || `<pre class="whitespace-pre-wrap">${data.text}</pre>`;
             document.getElementById('mail-modal').classList.remove('hidden');
         }
 
         function closeMail() { document.getElementById('mail-modal').classList.add('hidden'); }
+
         function copyEmail() {
-            const input = document.getElementById('email-addr');
-            input.select();
-            document.execCommand('copy');
-            alert("কপি হয়েছে!");
+            const text = document.getElementById('current-email').innerText;
+            navigator.clipboard.writeText(text);
+            alert("ইমেইল কপি করা হয়েছে: " + text);
         }
 
-        // শুরুতে লোড
-        initMail();
-        // প্রতি ৫ সেকেন্ডে ইনবক্স রিফ্রেশ
-        setInterval(checkMessages, 5000);
+        // ইনিশিয়ালাইজেশন
+        fetchDomains();
+        setInterval(checkMessages, 5000); // প্রতি ৫ সেকেন্ডে চেক
     </script>
 </body>
 </html>
