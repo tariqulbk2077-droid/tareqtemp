@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার ফ্রি টেম্প মেইল</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-10">
+
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+        <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">Temporary Email Service</h1>
+        
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <input id="email-addr" readonly type="text" class="flex-1 p-3 border rounded bg-gray-50 font-mono text-sm" value="লোড হচ্ছে...">
+            <button onclick="copyEmail()" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition">কপি করুন</button>
+            <button onclick="refreshEmail()" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition">নতুন মেইল</button>
+        </div>
+
+        <div class="border-t pt-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">ইনবক্স</h2>
+                <button onclick="checkInbox()" class="text-blue-500 hover:underline text-sm">রিফ্রেশ ইনবক্স</button>
+            </div>
+            
+            <div id="loading" class="hidden text-center py-4 text-gray-500">চেক করা হচ্ছে...</div>
+            <div id="emails-list" class="space-y-3">
+                <p class="text-gray-400 text-center py-10">কোনো মেসেজ নেই।</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="mail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-2xl p-6 relative">
+            <button onclick="closeMail()" class="absolute top-2 right-4 text-2xl">&times;</button>
+            <div id="mail-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmail = "";
+        let user = "";
+        let domain = "";
+
+        // নতুন ইমেইল তৈরি
+        function generateEmail() {
+            user = Math.random().toString(36).substring(2, 12);
+            domain = "1secmail.com";
+            currentEmail = `${user}@${domain}`;
+            document.getElementById('email-addr').value = currentEmail;
+            document.getElementById('emails-list').innerHTML = '<p class="text-gray-400 text-center py-10">ইনবক্স খালি।</p>';
+        }
+
+        // কপি ফাংশন
+        function copyEmail() {
+            const el = document.getElementById('email-addr');
+            el.select();
+            document.execCommand('copy');
+            alert("মেইল কপি হয়েছে!");
+        }
+
+        function refreshEmail() {
+            generateEmail();
+        }
+
+        // ইনবক্স চেক করা
+        async function checkInbox() {
+            document.getElementById('loading').classList.remove('hidden');
+            try {
+                const res = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${user}&domain=${domain}`);
+                const messages = await res.json();
+                
+                const list = document.getElementById('emails-list');
+                list.innerHTML = '';
+
+                if (messages.length === 0) {
+                    list.innerHTML = '<p class="text-gray-400 text-center py-10">কোনো মেসেজ নেই।</p>';
+                } else {
+                    messages.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = "p-4 border rounded cursor-pointer hover:bg-gray-50 transition";
+                        div.onclick = () => readMail(msg.id);
+                        div.innerHTML = `
+                            <div class="font-bold text-sm text-gray-700 underline">থেকে: ${msg.from}</div>
+                            <div class="text-blue-600 font-medium">${msg.subject}</div>
+                            <div class="text-xs text-gray-400 mt-1">${msg.date}</div>
+                        `;
+                        list.appendChild(div);
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching inbox", err);
+            }
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        // মেইল পড়া
+        async function readMail(id) {
+            const res = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${user}&domain=${domain}&id=${id}`);
+            const data = await res.json();
+            
+            const modal = document.getElementById('mail-modal');
+            const content = document.getElementById('mail-content');
+            
+            content.innerHTML = `
+                <h3 class="font-bold text-lg mb-2">${data.subject}</h3>
+                <p class="text-sm text-gray-500 mb-4 border-b pb-2">প্রেরক: ${data.from} | সময়: ${data.date}</p>
+                <div class="mt-4 overflow-auto max-h-[60vh]">${data.htmlBody || data.textBody}</div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function closeMail() {
+            document.getElementById('mail-modal').classList.add('hidden');
+        }
+
+        // শুরুতে একটি মেইল জেনারেট করা
+        generateEmail();
+        // প্রতি ১০ সেকেন্ডে অটো রিফ্রেশ
+        setInterval(checkInbox, 10000);
+    </script>
+</body>
+</html>
+
